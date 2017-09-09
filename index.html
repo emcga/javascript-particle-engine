@@ -1,8 +1,9 @@
 <!DOCTYPE html>
 <html>
 <body>
+
     <div>
-        <canvas onmousemove = "mouseMoveEventHandler(event)" id="myCanvas" width="800" height="600" style="border:1px solid #000000;"></canvas> 
+        <canvas onmousemove = "mouseMoveEventHandler(event)" width = "800" height = "600" style="background-color: black; border:1px solid #000000;" id="myCanvas"></canvas> 
     </div>
     <div>
         <input type="color" onchange="colorPickerChanged(event)" value="#ff0000" style="width:20%;">
@@ -16,10 +17,10 @@
     particles = [];
 
     REFRESH_RATE_MILLIS = 20;
-    NUM_OF_PARTICLES = 500;
+    NUM_OF_PARTICLES = 5000;
     RANDOM_SIZES = false;
-    INITIAL_PARTICLE_SIZE_X = 2;
-    INITIAL_PARTICLE_SIZE_Y = 2;
+    INITIAL_PARTICLE_SIZE_X = 4;
+    INITIAL_PARTICLE_SIZE_Y = 4;
 
 
     mousePosition = {x:0, y:0};
@@ -103,10 +104,11 @@
                 respawnInvisibleParticles(particle);
 
                 //Gravity
-                particle.yVel += 0.5
+                particle.yVel += 0.0;
 
                 //Draw the rectangle on the canvas
                 drawParticle(particle.x, particle.y, particle.xSize, particle.ySize, particle.opacity, particle.color);
+                //drawParticle(particle.x, particle.y, particle.xSize, particle.ySize, particle.opacity, randomColor());
             }
         }, refreshRateMillis);
     }
@@ -138,7 +140,24 @@
         particle.xVel = (Math.random() * -5) + 2.5;
         particle.yVel = Math.random() * 2.5;
         resetParticleOpacity(particle);
-        particle.color = particleColor;
+        //particle.color = particleColor;
+        particle.color = randomColor();
+        //particle.xSize = Math.floor(Math.random() * 25);
+        //particle.ySize = Math.floor(Math.random() * 25);
+
+    }
+
+    function randomColor(){
+        var newColor = "";
+        var r, b, g;
+
+        r = Math.floor(Math.random() * 255);
+        g = Math.floor(Math.random() * 255);
+        b = Math.floor(Math.random() * 255);
+
+        newColor = r + "," + g + "," + b;
+
+        return newColor;
     }
 
     //Checks to see if the particle is outside of the drawing area
