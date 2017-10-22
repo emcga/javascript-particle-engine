@@ -1,298 +1,199 @@
 //A simple particle engine using html5 web canvas
-
-canvas = null;
-
-context = null;
-
-particles = [];
+//Written by: Eric McGaha
 
 REFRESH_RATE_MILLIS = 20;
-
 NUM_OF_PARTICLES = 5000;
-
-RANDOM_SIZES = false;
-
 INITIAL_PARTICLE_SIZE_X = 4;
-
 INITIAL_PARTICLE_SIZE_Y = 4;
+GRAVITY = 0.1;
+RANDOMIZE_PARTICLE_COLOR = true;
 
-mousePosition = {x:0, y:0};
 
+canvas = null;
+context = null;
+particles = [];
+mousePosition = { x:0, y:0 };
 particleColor = "215,27,226";
 
+
 //Populates the particle array with particles
-
-function populateParticleArray(count){
-
-for(x=0; x<count; x++){
-
-particles.push({
-
-x:40, 
-
-y:50, 
-
-xSize:INITIAL_PARTICLE_SIZE_X, 
-
-ySize:INITIAL_PARTICLE_SIZE_Y, 
-
-xVel:5,
-
-yVel:1,
-
-opacity:1,
-
-fadeRate:0,
-
-color: particleColor
-
-});
-
-}
-
+function populateParticleArray(count) {
+    for (x = 0; x < count; x++) {
+        particles.push({
+            x: 40,
+            y: 50,
+            xSize: INITIAL_PARTICLE_SIZE_X,
+            ySize: INITIAL_PARTICLE_SIZE_Y,
+            xVel: 5,
+            yVel: 1,
+            opacity: 1,
+            fadeRate: 0,
+            color: particleColor
+        });
+    }
 }
 
 //Gets and sets the canvas and drawing context
 
-function initCanvas(){
-
-canvas = document.getElementById("myCanvas");
-
-context = canvas.getContext("2d");
-
+function initCanvas() {
+    canvas = document.getElementById("myCanvas");
+    context = canvas.getContext("2d");
 }
 
 //Draws a rectangle on the canvas
 
-function drawParticle(x, y, sizeX, sizeY, alpha, color){
-
-context.fillStyle = "rgba(" + color + "," + alpha + ")";
-
-context.fillRect(x,y,sizeX,sizeY);
-
+function drawParticle(x, y, sizeX, sizeY, alpha, color) {
+    context.fillStyle = "rgba(" + color + "," + alpha + ")";
+    context.fillRect(x, y, sizeX, sizeY);
 }
 
 //Clears the contents of the canvas
 
-function clearCanvas(){
-
-context.clearRect(0, 0, canvas.width, canvas.height);
-
+function clearCanvas() {
+    context.clearRect(0, 0, canvas.width, canvas.height);
 }
 
 //Sets the x and y variables of the mousePosition object
 
-function mouseMoveEventHandler(event){
-
-mousePosition.x = event.clientX - 10;
-
-mousePosition.y = event.clientY - 10;
-
+function mouseMoveEventHandler(event) {
+    mousePosition.x = event.clientX - 10;
+    mousePosition.y = event.clientY - 10;
 }
 
-function colorPickerChanged(event){
-
-particleColor = convertHex(event.srcElement.value);
-
+function colorPickerChanged(event) {
+    particleColor = convertHex(event.srcElement.value);
 }
 
-function convertHex(hex){
+function convertHex(hex) {
+    hex = hex.replace('#', '');
 
-hex = hex.replace('#','');
+    r = parseInt(hex.substring(0, 2), 16);
+    g = parseInt(hex.substring(2, 4), 16);
+    b = parseInt(hex.substring(4, 6), 16);
 
-r = parseInt(hex.substring(0,2), 16);
+    result = r + ',' + g + ',' + b;
 
-g = parseInt(hex.substring(2,4), 16);
-
-b = parseInt(hex.substring(4,6), 16);
-
-result = r+','+g+','+b;
-
-return result;
-
+    return result;
 }
 
 //Starts the rendering loop
+function startRenderLoop(refreshRateMillis) {
 
-function startRenderLoop(refreshRateMillis){
+    //Render loop
+    setInterval(function () {
 
-//Render loop
+        //Clear the canvas for the next draw cycle
+        clearCanvas();
 
-setInterval(function(){
+        //Loop through the particle array and draw them
+        for (x = 0; x < particles.length; x++) {
 
-//Clear the canvas for the next draw cycle
+            var particle = particles[x];
 
-clearCanvas(); 
+            //Updates the particle location
+            updateParticleLocation(particle);
 
-//Loop through the particle array and draw them
+            //Updates the opacity of the particle based on its fade rate
+            updateParticleOpacity(particle)
 
-for(x=0;x<particles.length;x++){
+            //Checks to see if the particle is outside of the canvas. If it is, it is re-spawned
+            respawnParticleOutsideOfCanvas(particle);
 
-var particle = particles[x];
+            //Respawns particles that have an opacity of 0
+            respawnInvisibleParticles(particle);
 
-//Updates the particle location
+            //Draw the rectangle on the canvas
+            drawParticle(particle.x, particle.y, particle.xSize, particle.ySize, particle.opacity, particle.color);
 
-updateParticleLocation(particle);
+        }
 
-//Updates the opacity of the particle based on its fade rate
-
-updateParticleOpacity(particle)
-
-//Checks to see if the particle is outside of the canvas. If it is, it is re-spawned
-
-respawnParticleOutsideOfCanvas(particle);
-
-respawnInvisibleParticles(particle);
-
-//Gravity
-
-particle.yVel += 0.0;
-
-//Draw the rectangle on the canvas
-
-drawParticle(particle.x, particle.y, particle.xSize, particle.ySize, particle.opacity, particle.color);
-
-//drawParticle(particle.x, particle.y, particle.xSize, particle.ySize, particle.opacity, randomColor());
-
-}
-
-}, refreshRateMillis);
+    }, refreshRateMillis);
 
 }
 
 //Move the particle based on its X and Y velocities
+function updateParticleLocation(particle) {
+    particle.x += particle.xVel;
+    particle.y += particle.yVel;
 
-function updateParticleLocation(particle){
-
-particle.x += particle.xVel;
-
-particle.y += particle.yVel;
-
+    //Gravity
+    particle.yVel += GRAVITY;
 }
 
 //Respawn the particle if it is outside of the canvas
-
-function respawnParticleOutsideOfCanvas(particle){
-
-if(isParticleOutsideOfCanvas(particle)){
-
-respawnParticle(particle);
-
-}
-
+function respawnParticleOutsideOfCanvas(particle) {
+    if (isParticleOutsideOfCanvas(particle)) {
+        respawnParticle(particle);
+    }
 }
 
 //Respawn the particle if it is not visible anymore
-
-function respawnInvisibleParticles(particle){
-
-if(!isParticleVisible(particle)){
-
-respawnParticle(particle);
-
-}
-
+function respawnInvisibleParticles(particle) {
+    if (!isParticleVisible(particle)) {
+        respawnParticle(particle);
+    }
 }
 
 //Respawns the provided particle
+function respawnParticle(particle) {
+    particle.x = mousePosition.x;
+    particle.y = mousePosition.y;
+    particle.xVel = (Math.random() * -5) + 2.5;
+    particle.yVel = (Math.random() * -5) + 2.5;
 
-function respawnParticle(particle){
+    resetParticleOpacity(particle);  
 
-particle.x = mousePosition.x;
-
-particle.y = mousePosition.y;
-
-particle.xVel = (Math.random() * -5) + 2.5;
-
-particle.yVel = Math.random() * 2.5;
-
-resetParticleOpacity(particle);
-
-//particle.color = particleColor;
-
-particle.color = randomColor();
-
-//particle.xSize = Math.floor(Math.random() * 25);
-
-//particle.ySize = Math.floor(Math.random() * 25);
-
+    if(RANDOMIZE_PARTICLE_COLOR){
+        particle.color = randomColor();
+    }else{
+        particle.color = particleColor;
+    }
 }
 
-function randomColor(){
+//Generates a random color
+function randomColor() {
+    var newColor = "";
+    var r, b, g;
 
-var newColor = "";
+    r = Math.floor(Math.random() * 255);
+    g = Math.floor(Math.random() * 255);
+    b = Math.floor(Math.random() * 255);
 
-var r, b, g;
+    newColor = r + "," + g + "," + b;
 
-r = Math.floor(Math.random() * 255);
-
-g = Math.floor(Math.random() * 255);
-
-b = Math.floor(Math.random() * 255);
-
-newColor = r + "," + g + "," + b;
-
-return newColor;
-
+    return newColor;
 }
 
 //Checks to see if the particle is outside of the drawing area
-
-function isParticleOutsideOfCanvas(particle){
-
-if((particle.x > canvas.width || particle.y > canvas.height) || (particle.x < 0 || particle.y < 0)){
-
-return true;
-
-}
-
-else{
-
-return false;
-
-}
-
+function isParticleOutsideOfCanvas(particle) {
+    if ((particle.x > canvas.width || particle.y > canvas.height) || (particle.x < 0 || particle.y < 0)) {
+        return true;
+    }else {
+        return false;
+    }
 }
 
 //Checks to see if the particle is transparent
-
-function isParticleVisible(particle){
-
-if(particle.opacity <= 0){
-
-return false;
-
-}
-
-else{
-
-return true;
-
-}
-
+function isParticleVisible(particle) {
+    if (particle.opacity <= 0) {
+        return false;
+    }else {
+        return true;
+    }
 }
 
 //Updates the particle's opacity based on its fade rate. Used in the render loop
-
-function updateParticleOpacity(particle){
-
-particle.opacity -= particle.fadeRate * 0.01;
-
+function updateParticleOpacity(particle) {
+    particle.opacity -= particle.fadeRate * 0.01;
 }
 
 //Makes the particle visible again
-
-function resetParticleOpacity(particle){
-
-particle.opacity = 1;
-
+function resetParticleOpacity(particle) {
+    particle.opacity = 1;
 }
 
 //Start of program
-
 initCanvas();
-
 populateParticleArray(NUM_OF_PARTICLES);
-
 startRenderLoop(REFRESH_RATE_MILLIS);
 

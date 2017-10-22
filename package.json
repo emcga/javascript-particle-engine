@@ -1,0 +1,22 @@
+{
+  "name": "javascript-particle-engine",
+  "version": "0.0.1",
+  "description": "A basic JavaScript particle engine",
+  "main": "engine.js",
+  "scripts": {
+    "server": "http-server"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/emcga/javascript-particle-engine.git"
+  },
+  "author": "Eric McGaha",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/emcga/javascript-particle-engine/issues"
+  },
+  "homepage": "https://github.com/emcga/javascript-particle-engine#readme",
+  "dependencies": {
+    "http-server": "^0.10.0"
+  }
+}
