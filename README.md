@@ -12,8 +12,7 @@ Open up your terminal and run the following commands. Please make sure you have 
 
 ```2. npm run server```
 
-At this point http-server should be listening on port 8080. Open up your favorite browser and navigate to http://localhost:8080.
-(note: Chrome seems to be most performant)
+At this point http-server should be listening on port 8080. Open up your favorite HTML5 compliant browser and navigate to http://localhost:8080. (note: Chrome seems to be most performant)
 
 <br>
 
